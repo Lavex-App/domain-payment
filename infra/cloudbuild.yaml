@@ -1,0 +1,38 @@
+steps:
+  - id: "Set App Engine variables"
+    name: "gcr.io/cloud-builders/gcloud"
+    secretEnv: ["DB_URI", "DB_NAME", "PROJECT_ID"]
+    entrypoint: "bash"
+    args:
+      - -c
+      - |
+        echo $'\n  DB_URI: '$$DB_URI >> ./infra/app_engine/${_ENV}.yaml
+        echo $'\n  DB_NAME: '$$DB_NAME >> ./infra/app_engine/${_ENV}.yaml
+        echo $'\n  PROJECT_ID: '$$PROJECT_ID >> ./infra/app_engine/${_ENV}.yaml
+        echo $'\n  SERVICE_NAME: ${_SERVICE_NAME}\n' >> ./infra/app_engine/${_ENV}.yaml
+    timeout: "1600s"
+
+  - id: "Move App Engine env"
+    name: "gcr.io/cloud-builders/gcloud"
+    entrypoint: "bash"
+    args: ["-c", "mv ./infra/app_engine/${_ENV}.yaml ./app.yaml"]
+    timeout: "1600s"
+
+  - id: "Deploy App Engine"
+    name: "google/cloud-sdk"
+    entrypoint: "bash"
+    args:
+      [
+        "-c",
+        "gcloud config set app/cloud_build_timeout 1600 && gcloud app deploy",
+      ]
+    timeout: "1600s"
+
+availableSecrets:
+  secretManager:
+    - versionName: projects/$PROJECT_ID/secrets/PROJECT_ID/versions/latest
+      env: "PROJECT_ID"
+    - versionName: projects/$PROJECT_ID/secrets/${_ENV}_${_SERVICE_TAG}_DB_URI/versions/latest
+      env: "DB_URI"
+    - versionName: projects/$PROJECT_ID/secrets/${_ENV}_${_SERVICE_TAG}_DB_NAME/versions/latest
+      env: "DB_NAME"

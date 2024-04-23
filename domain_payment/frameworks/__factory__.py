@@ -11,7 +11,10 @@ from .pix_efi import PixFrameworkConfig, PixManager
 
 
 class FrameworksConfig(
-    FirebaseFrameworkConfig, MotorFrameworkConfig, GCPStorageFrameworkConfig, PixFrameworkConfig
+    FirebaseFrameworkConfig,
+    MotorFrameworkConfig,
+    GCPStorageFrameworkConfig,
+    PixFrameworkConfig,
 ): ...
 
 

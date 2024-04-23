@@ -27,7 +27,6 @@ def configs() -> FrameworksConfig:
     env = Env(eager=True)
     env.read_env()
     return FrameworksConfig(
-        database_name=env.str("DB_NAME"),
         database_uri=env.str("DB_URI"),
         service_name=env.str("SERVICE_NAME"),
         credentials=env.str("GOOGLE_APPLICATION_CREDENTIALS", None),
@@ -36,11 +35,11 @@ def configs() -> FrameworksConfig:
         client_secret=env.str("CLIENT_SECRET"),
         certificate=env.str("CERTIFICATE"),
         sandbox=env.bool("SANDBOX"),
+        storage_credentials=env.str("GOOGLE_APPLICATION_CREDENTIALS", None),
     )
 
 
 class AppBinding:
-    """Bind all dependency inversion of the project"""
     business: BusinessFactory
     adapters: AdaptersFactory
     frameworks: FrameworksFactory
@@ -58,7 +57,7 @@ class AppBinding:
         self.business = BusinessFactory(self.adapters)
 
     def bind_controllers(self) -> None:
-        authentication_framework = self.frameworks.authentication_framework()
+        authentication_framework = self.frameworks.authentication_provider()
         bind_controller_dependencies(self.business, authentication_framework)
 
     def facade(self) -> None:

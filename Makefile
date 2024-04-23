@@ -12,4 +12,4 @@ style:
 	black --line-length 120 domain_payment/
 
 run:
-	uvicorn domain_payment.main:app --host 0.0.0.0 --reload
+	uvicorn domain_payment.main:app --host 0.0.0.0 --port 8001 --reload

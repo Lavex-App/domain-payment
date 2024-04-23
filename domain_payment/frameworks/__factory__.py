@@ -1,63 +1,57 @@
-from typing import TypedDict
+from functools import lru_cache
+
+import aiohttp
 
 from domain_payment.adapters.__factory__ import FrameworksFactoryInterface
 
 from .firebase import FirebaseFrameworkConfig, FirebaseManager
+from .gcp_storage import GCPStorageFrameworkConfig, GCPStorageManager
 from .mongodb import MotorFrameworkConfig, MotorManager
 from .pix_efi import PixFrameworkConfig, PixManager
 
 
-class FrameworksConfig(FirebaseFrameworkConfig, MotorFrameworkConfig, PixFrameworkConfig):
-    """Specification of the configurations required by the Frameworks."""
+class FrameworksConfig(
+    FirebaseFrameworkConfig, MotorFrameworkConfig, GCPStorageFrameworkConfig, PixFrameworkConfig
+): ...
 
 
-class FrameworksFactory(FrameworksFactoryInterface[MotorManager]):
-    """Responsible for instantiating the Frameworks classes with their linked dependencies.
-
-    This class is responsible for creating instances of framework classes with their required dependencies,
-    particularly for interacting with MongoDB using Motor.
-
-    Args:
-        config (FrameworksConfig): A dictionary containing configuration parameters for the framework.
-    """
-
+class FrameworksFactory(
+    FrameworksFactoryInterface[
+        MotorManager,
+        GCPStorageManager,
+        FirebaseManager,
+        FirebaseManager,
+        PixManager,
+    ]
+):
     def __init__(self, config: FrameworksConfig) -> None:
-        """Initialize the FrameworksFactory with the provided configuration.
-
-        Args:
-            config (FrameworksConfig): A dictionary containing configuration parameters for the frameworks.
-        """
         self.__config = config
         self.__manager = MotorManager(config)
+        self.__session = aiohttp.ClientSession()
 
     async def connect(self) -> None:
-        """Connect to the MongoDB database asynchronously."""
         await self.__manager.connect()
 
     def close(self) -> None:
-        """Close the connection to the MongoDB database."""
         self.__manager.close()
+        self.__session.close()
 
-    def database_framework(self) -> MotorManager:
-        """Get the MotorManager instance representing the MongoDB database framework.
-
-        Returns:
-            MotorManager: An instance of MotorManager representing the MongoDB database framework.
-        """
+    def database_provider(self) -> MotorManager:
         return self.__manager
 
-    def authentication_framework(self) -> FirebaseManager:
-        """Get the FirebaseManager instance representing the Firebase authentication framework.
+    def bucket_provider(self) -> GCPStorageManager:
+        return GCPStorageManager(self.__config, self.__session)
 
-        Returns:
-            FirebaseManager: An instance of FirebaseManager representing the Firebase authentication framework.
-        """
-        return FirebaseManager(self.__config)
+    def authentication_provider(self) -> FirebaseManager:
+        return self.__firebase_manager
 
-    def pix_framework(self) -> FirebaseManager:
-        """Get the PixManager instance representing the Pix framework.
+    def user_provider(self) -> FirebaseManager:
+        return self.__firebase_manager
 
-        Returns:
-            PixManager: An instance of PixManager representing the Pix framework.
-        """
+    def pix_provider(self) -> PixManager:
+        return PixManager(self.__config)
+
+    @property
+    @lru_cache
+    def __firebase_manager(self) -> FirebaseManager:
         return FirebaseManager(self.__config)

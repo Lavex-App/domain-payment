@@ -6,9 +6,9 @@ from fastapi.responses import JSONResponse
 from pydantic_core import ValidationError
 
 from domain_payment.adapters.controllers.__dependencies__ import RegisterControllerDependencies
-from domain_payment.business.ports import ChargePixInputPort, ChargePixOutputPort
+from domain_payment.business.ports import ChargePixInputPort
 
-from .dtos import ChargePixInputDTO, ChargePixOutputDTO, RetrieveAccountInputDTO
+from .dtos import ChargePixInputDTO, ChargePixOutputDTO
 
 account_controller = APIRouter()
 
@@ -22,20 +22,10 @@ async def charge_pix(
     dto: ChargePixInputDTO,
     dependencies: Annotated[RegisterControllerDependencies, Depends()],
 ) -> JSONResponse | ChargePixOutputDTO:
-    """Register a new account.
-
-    Args:
-        dto (RegisterAccountInputDTO): The input DTO containing account information.
-        dependencies (RegisterControllerDependencies): Dependencies for registering the account.
-
-    Returns:
-        JSONResponse | RegisterAccountOutputDTO: Response containing account registration details.
-    """
     try:
-        retrieve_account_input_port = RetrieveAccountInputDTO(uid=dependencies.uid)
-        charge_pix_input_port = ChargePixInputPort(**dto.model_dump())
+        charge_pix_input_port = ChargePixInputPort(**dto.model_dump(), uid=dependencies.uid)
         output_port = await dependencies.charge_pix_use_case(charge_pix_input_port)
-        return ChargePixOutputDTO(msg=output_port.msg)
+        return ChargePixOutputDTO(**output_port.model_dump())
     except ValidationError as errors:
         output_errors = {}
         for error in errors.errors():

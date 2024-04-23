@@ -16,6 +16,10 @@ pydantic = "^2.6.4"
 certifi = "^2024.2.2"
 firebase-admin = "^6.5.0"
 efipay = "^1.0.1"
+async-property = "^0.2.2"
+gcloud-aio-storage = "^9.3.0"
+aiohttp = "^3.9.5"
+aiofiles = "^23.2.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.3.0"
@@ -54,6 +58,7 @@ disable = [
     "C0114",
     "C0116",
     "C0301",
+    "C0115",
     "R0903",
     "W1203",
     "E0611",

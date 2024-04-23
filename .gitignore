@@ -159,3 +159,4 @@ terraform.rc
 # Credentials
 firebaseServiceAccountKey.json
 *.p12
+*.pem

@@ -1,0 +1,25 @@
+from abc import ABCMeta, abstractmethod
+from typing import NamedTuple
+
+
+class ImageUploadInput(NamedTuple):
+    path2image: str
+    bucket_name: str
+    image_name_on_bucket: str
+
+
+class ImageUploadOutput(NamedTuple):
+    image_uri: str
+
+
+class BucketUploader(metaclass=ABCMeta):
+    @abstractmethod
+    async def upload(self, port: ImageUploadInput) -> ImageUploadOutput: ...
+
+
+class BucketProvider(metaclass=ABCMeta):
+    @abstractmethod
+    async def __aenter__(self) -> BucketUploader: ...
+
+    @abstractmethod
+    async def __aexit__(self, *_) -> None: ...

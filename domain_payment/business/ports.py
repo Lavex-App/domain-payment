@@ -1,15 +1,11 @@
-from domain_payment.models import AuthenticatedUserModel
+from domain_payment.models import AuthenticatedUserModel, PixChargeModel
 
 from .interfaces import InputPort, OutputPort
 
 
 class ChargePixInputPort(AuthenticatedUserModel, InputPort):
-    """Input Port for charge via pix"""
-
     charge_value: float
 
 
-class ChargePixOutputPort(OutputPort):
-    """Output Port for charge via pix"""
-
+class ChargePixOutputPort(PixChargeModel, OutputPort):
     msg: str

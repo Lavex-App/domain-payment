@@ -3,66 +3,38 @@ from typing import Generic
 
 from typing_extensions import TypeVar
 
-from domain_payment.business.use_case import ChargePixUseCase
+from domain_payment.business.use_case import ChargePixServices, ChargePixUseCase
 
-from .services import PixService
+from .services import AccountService, AdminService, PaymentService
 
-T_pix_service_co = TypeVar("T_pix_service_co", bound=PixService, covariant=True)
+T_payment_service_co = TypeVar("T_payment_service_co", bound=PaymentService, covariant=True)
+T_account_service_co = TypeVar("T_account_service_co", bound=AccountService, covariant=True)
+T_admin_service_co = TypeVar("T_admin_service_co", bound=AdminService, covariant=True)
 
 
-class AdaptersFactoryInterface(Generic[T_pix_service_co], metaclass=ABCMeta):
-    """Interface for the Adapters Factory according to the Business layer needs.
-
-    This interface defines the contract for a factory that provides adapter services,
-    such as pix management, to the business layer.
-
-    """
+# noinspection PyTypeHints
+class AdaptersFactoryInterface(
+    Generic[T_payment_service_co, T_account_service_co, T_admin_service_co],
+    metaclass=ABCMeta,
+):
+    @abstractmethod
+    def admin_service(self) -> T_admin_service_co: ...
 
     @abstractmethod
-    def account_service(self) -> T_pix_service_co:
-        """Abstract method to retrieve the pix service instance."""
+    def account_service(self) -> T_account_service_co: ...
+
+    @abstractmethod
+    def payment_service(self) -> T_payment_service_co: ...
 
 
 class BusinessFactory:
-    """
-    Responsible for instantiating the Business classes with their linked dependencies.
-
-    This class is responsible for creating instances of business classes with their required dependencies,
-    particularly for the account-related use cases.
-
-    Args:
-        adapters_factory (AdaptersFactoryInterface): An instance of a factory implementing the
-            `AdaptersFactoryInterface`, providing access to the necessary adapter services.
-
-    Methods:
-        example_use_case(): Instantiate and return a ExampleUseCase with the configured pix service.
-    """
-
     def __init__(self, adapters_factory: AdaptersFactoryInterface) -> None:
-        """Initialize the BusinessFactory with the provided adapters factory.
-
-        Args:
-            adapters_factory (AdaptersFactoryInterface): An instance of a factory implementing the
-                `AdaptersFactoryInterface`.
-
-        """
         self.__factory = adapters_factory
 
     def charge_pix_use_case(self) -> ChargePixUseCase:
-        """Instantiate and return a ChargePixUseCase with the configured pix service.
-
-        Returns:
-            ExampleUseCase: An instance of ChargePixUseCase with the configured pix service.
-
-        """
-        return ChargePixUseCase(service=self.__pix_service)
-
-    @property
-    def __pix_service(self) -> PixService:
-        """
-        Retrieve the pix service instance.
-
-        Returns:
-            PixService: An instance of the pix service.
-        """
-        return self.__factory.account_service()
+        services = ChargePixServices(
+            payment_service=self.__factory.payment_service(),
+            admin_service=self.__factory.admin_service(),
+            account_service=self.__factory.account_service(),
+        )
+        return ChargePixUseCase(services)

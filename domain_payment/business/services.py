@@ -1,41 +1,29 @@
 from abc import ABCMeta, abstractmethod
 
-from domain_payment.models import AccountModel, AuthenticatedUserModel, PixModel
+from domain_payment.models import AccountModel, AuthenticatedUserModel, PixChargeModel, PixModel
 
 from .interfaces import Service
 
 
-class PixService(Service, metaclass=ABCMeta):
-    """A service providing access to features outside Business Layer.
-
-    Methods:
-        register(port): Register a new user.
-    """
-
+class PaymentService(Service, metaclass=ABCMeta):
     @abstractmethod
-    def generate_pix_qrcode(self, port: PixModel) -> None:
-        """Register a new user.
-
-        Args:
-            port (PixModel): The input port containing user account information.
-        """
+    async def generate_pix_qrcode(self, pix_model: PixModel, user_model: AuthenticatedUserModel) -> PixChargeModel: ...
 
 
 class AdminService(Service, metaclass=ABCMeta):
+    @property
     @abstractmethod
-    async def pix_key(self) -> str:
-        """"""
+    async def pix_key(self) -> str: ...
 
+    @property
     @abstractmethod
-    async def pix_expiration_time(self) -> str:
-        """"""
+    async def pix_expiration_time(self) -> int: ...
 
+    @property
     @abstractmethod
-    async def pix_request_type(self) -> str:
-        """"""
+    async def pix_request_type(self) -> str: ...
 
 
 class AccountService(Service, metaclass=ABCMeta):
     @abstractmethod
-    async def retrieve_user(self, port: AuthenticatedUserModel) -> AccountModel:
-        """"""
+    async def retrieve_user(self, port: AuthenticatedUserModel) -> AccountModel: ...

@@ -12,6 +12,7 @@ from .interface_adapters import (
     AdminAdapter,
     AdminProviders,
     PaymentAdapter,
+    PaymentAdapterConfig,
     PaymentProviders,
 )
 from .interface_adapters.interfaces import (
@@ -49,9 +50,13 @@ class FrameworksFactoryInterface(
     def pix_provider(self) -> T_pix_provider_co: ...
 
 
+class AdaptersConfig(PaymentAdapterConfig): ...
+
+
 class AdaptersFactory(AdaptersFactoryInterface[PaymentAdapter, AccountAdapter, AdminAdapter]):
-    def __init__(self, frameworks_factory: FrameworksFactoryInterface) -> None:
+    def __init__(self, frameworks_factory: FrameworksFactoryInterface, config: AdaptersConfig) -> None:
         self.__factory = frameworks_factory
+        self.__config = config
 
     def admin_service(self) -> AdminAdapter:
         admin_providers = AdminProviders(document_database_provider=self.__factory.database_provider())
@@ -69,7 +74,7 @@ class AdaptersFactory(AdaptersFactoryInterface[PaymentAdapter, AccountAdapter, A
             pix_provider=self.__factory.pix_provider(),
             bucket_provider=self.__factory.bucket_provider(),
         )
-        return PaymentAdapter(payment_providers)
+        return PaymentAdapter(payment_providers, self.__config)
 
     @staticmethod
     def register_routes(app: FastAPI) -> None:

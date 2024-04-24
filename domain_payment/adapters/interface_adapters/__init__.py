@@ -1,6 +1,6 @@
 from .account_adapter import AccountAdapter, AccountProviders
 from .admin_adapter import AdminAdapter, AdminProviders
-from .payment_adapter import PaymentAdapter, PaymentProviders
+from .payment_adapter import PaymentAdapter, PaymentAdapterConfig, PaymentProviders
 
 __all__ = [
     "AccountAdapter",
@@ -9,4 +9,5 @@ __all__ = [
     "AdminProviders",
     "PaymentAdapter",
     "PaymentProviders",
+    "PaymentAdapterConfig",
 ]

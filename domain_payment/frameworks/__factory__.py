@@ -27,17 +27,19 @@ class FrameworksFactory(
         PixManager,
     ]
 ):
+    __session: aiohttp.ClientSession
+
     def __init__(self, config: FrameworksConfig) -> None:
         self.__config = config
         self.__manager = MotorManager(config)
-        self.__session = aiohttp.ClientSession()
 
     async def connect(self) -> None:
         await self.__manager.connect()
+        self.__session = aiohttp.ClientSession()
 
-    def close(self) -> None:
+    async def close(self) -> None:
         self.__manager.close()
-        self.__session.close()
+        await self.__session.close()
 
     def database_provider(self) -> MotorManager:
         return self.__manager

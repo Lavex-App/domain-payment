@@ -14,7 +14,7 @@ def lifespan_dependencies(factory: FrameworksFactory) -> LifespanType:
     async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
         await factory.connect()
         yield
-        factory.close()
+        await factory.close()
 
     return lifespan
 

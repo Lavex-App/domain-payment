@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 
 class ImageUploadInput(NamedTuple):
@@ -22,4 +22,4 @@ class BucketProvider(metaclass=ABCMeta):
     async def __aenter__(self) -> BucketUploader: ...
 
     @abstractmethod
-    async def __aexit__(self, *_) -> None: ...
+    async def __aexit__(self, *_: Any) -> None: ...

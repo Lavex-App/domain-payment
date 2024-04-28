@@ -1,0 +1,16 @@
+[flake8]
+count = True
+format = pylint
+max-line-length = 120
+extend-ignore = E203
+show-source = True
+statistics = True
+jobs = 8
+tee = True
+doctests = True
+
+ignore =
+    # multiple statements on one line [class]
+    E701,
+    # multiple statements on one line [function]
+    E704

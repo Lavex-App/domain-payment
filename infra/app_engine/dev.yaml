@@ -1,0 +1,23 @@
+entrypoint: gunicorn -w 3 -k uvicorn.workers.UvicornWorker --timeout 7000 --preload --capture-output --bind "0.0.0.0:$PORT" --chdir domain_payment main:app
+
+inbound_services:
+  - warmup
+
+instance_class: F1
+runtime: python312
+service: default
+
+automatic_scaling:
+  max_instances: 1
+  min_instances: 0
+  max_idle_instances: 1
+  min_idle_instances: 0
+  target_cpu_utilization: 0.85
+  target_throughput_utilization: 0.85
+  max_concurrent_requests: 10
+  max_pending_latency: automatic
+  min_pending_latency: 500ms
+
+env_variables:
+  ENV: "dev"
+  DEBUG: False

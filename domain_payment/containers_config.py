@@ -60,43 +60,35 @@ class ProjectConfig(Config):
     @property
     @lru_cache
     def __motor_framework_config(self) -> MotorFrameworkConfig:
-        return (
-            MotorFrameworkConfig(
-                database_uri=self._env.str("DB_URI"),
-                service_name=self._env.str("SERVICE_NAME"),
-                sandbox=self.is_local or self.is_staging,
-            ),
+        return MotorFrameworkConfig(
+            database_uri=self._env.str("DB_URI"),
+            service_name=self._env.str("SERVICE_NAME"),
+            sandbox=self.is_local or self.is_staging,
         )
 
     @property
     @lru_cache
     def __firebase_framework_config(self) -> FirebaseFrameworkConfig:
-        return (
-            FirebaseFrameworkConfig(
-                credentials=self._env.str("GOOGLE_APPLICATION_CREDENTIALS", None),
-                auth_app_options={"projectId": self._env.str("PROJECT_ID")},
-            ),
+        return FirebaseFrameworkConfig(
+            credentials=self._env.str("GOOGLE_APPLICATION_CREDENTIALS", None),
+            auth_app_options={"projectId": self._env.str("PROJECT_ID")},
         )
 
     @property
     @lru_cache
     def __pix_framework_config(self) -> PixFrameworkConfig:
-        return (
-            PixFrameworkConfig(
-                certificate=self._env.str("CERTIFICATE"),
-                client_id=self._env.str("CLIENT_ID"),
-                client_secret=self._env.str("CLIENT_SECRET"),
-                sandbox=self.is_local or self.is_staging,
-            ),
+        return PixFrameworkConfig(
+            certificate=self._env.str("CERTIFICATE"),
+            client_id=self._env.str("CLIENT_ID"),
+            client_secret=self._env.str("CLIENT_SECRET"),
+            sandbox=self.is_local or self.is_staging,
         )
 
     @property
     @lru_cache
     def __gcp_storage_framework_config(self) -> GCPStorageFrameworkConfig:
-        return (
-            GCPStorageFrameworkConfig(
-                storage_credentials=self._env.str("GOOGLE_APPLICATION_CREDENTIALS", None),
-            ),
+        return GCPStorageFrameworkConfig(
+            storage_credentials=self._env.str("GOOGLE_APPLICATION_CREDENTIALS", None),
         )
 
 

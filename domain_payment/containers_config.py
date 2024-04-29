@@ -24,7 +24,7 @@ class ProjectConfig:
             client_id=self.__env.str("CLIENT_ID"),
             client_secret=self.__env.str("CLIENT_SECRET"),
             certificate=self.__env.str("CERTIFICATE"),
-            sandbox=self.__env.bool("SANDBOX"),
+            sandbox=self.__env.bool("ENV"),
             storage_credentials=self.__env.str("GOOGLE_APPLICATION_CREDENTIALS", None),
         )
 

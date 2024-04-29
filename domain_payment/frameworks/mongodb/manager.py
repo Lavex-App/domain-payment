@@ -11,6 +11,7 @@ from domain_payment.adapters.interface_adapters.interfaces import DatabaseName, 
 class MotorFrameworkConfig(TypedDict):
     database_uri: str
     service_name: str
+    sandbox: bool
 
 
 class MotorManager(DocumentDatabaseProvider[AsyncIOMotorClient, AsyncIOMotorDatabase]):
@@ -20,13 +21,13 @@ class MotorManager(DocumentDatabaseProvider[AsyncIOMotorClient, AsyncIOMotorData
         self._logger = logging.getLogger(f"{self.__class__.__name__}")
         self._service_name = config["service_name"]
         self._database_uri = config["database_uri"]
+        self._sandbox = config["sandbox"]
         self._client: AsyncIOMotorClient | None = None
 
     async def connect(self) -> None:
         self.close()
         try:
-            ca = certifi.where()
-            self._client = AsyncIOMotorClient(self._database_uri, appname=self._service_name, tls=True, tlsCAFile=ca)
+            self._client = self.__get_app()
             await self._client.admin.command("ping")
         except ConnectionFailure:  # pragma: no cover
             self._logger.info("Server [%s] not available!", self._database_uri)
@@ -52,3 +53,9 @@ class MotorManager(DocumentDatabaseProvider[AsyncIOMotorClient, AsyncIOMotorData
     @database.setter
     def database(self, database_name: DatabaseName) -> None:
         self._database_name = database_name.value
+
+    def __get_app(self) -> AsyncIOMotorClient:
+        if self._sandbox:
+            return AsyncIOMotorClient(self._database_uri, appname=self._service_name)
+        ca = certifi.where()
+        return AsyncIOMotorClient(self._database_uri, appname=self._service_name, tls=True, tlsCAFile=ca)

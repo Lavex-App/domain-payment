@@ -11,7 +11,6 @@ steps:
         echo $'\n  CERTIFICATE: '$$CERTIFICATE >> ./infra/app_engine/${_ENV}.yaml
         echo $'\n  CLIENT_ID: '$$CLIENT_ID >> ./infra/app_engine/${_ENV}.yaml
         echo $'\n  CLIENT_SECRET: '$$CLIENT_SECRET >> ./infra/app_engine/${_ENV}.yaml
-        echo $'\n  ENV: '${_ENV} >> ./infra/app_engine/${_ENV}.yaml
         echo $'\n  PROJECT_ID: '$$PROJECT_ID >> ./infra/app_engine/${_ENV}.yaml
         echo $'\n  SERVICE_NAME: ${_SERVICE_NAME}\n' >> ./infra/app_engine/${_ENV}.yaml
     timeout: "1600s"

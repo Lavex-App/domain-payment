@@ -5,7 +5,7 @@ inbound_services:
 
 instance_class: F1
 runtime: python312
-service: domain_payment
+service: domain-payment
 
 automatic_scaling:
   max_instances: 50

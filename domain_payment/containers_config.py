@@ -1,3 +1,4 @@
+from abc import ABCMeta
 from functools import lru_cache
 
 from environs import Env
@@ -8,31 +9,53 @@ from domain_payment.business.__factory__ import BusinessFactory
 from domain_payment.frameworks.__factory__ import FrameworksConfig, FrameworksFactory
 
 
-class ProjectConfig:
+class Config(metaclass=ABCMeta):
     def __init__(self) -> None:
-        self.__env = Env(eager=True)
-        self.__env.read_env()
+        self._env = Env(eager=True)
+        self._env.read_env()
 
+    @property
+    @lru_cache
+    def is_local(self) -> bool:
+        return self._get_project_env == "local"
+
+    @property
+    @lru_cache
+    def is_staging(self) -> bool:
+        return self._get_project_env in ["dev", "staging"]
+
+    @property
+    @lru_cache
+    def is_production(self) -> bool:
+        return self._get_project_env == "main"
+
+    @property
+    @lru_cache
+    def _get_project_env(self) -> str:
+        return self._env.str("ENV", "main")
+
+
+class ProjectConfig(Config):
     @property
     @lru_cache
     def frameworks_config(self) -> FrameworksConfig:
         return FrameworksConfig(
-            database_uri=self.__env.str("DB_URI"),
-            service_name=self.__env.str("SERVICE_NAME"),
-            credentials=self.__env.str("GOOGLE_APPLICATION_CREDENTIALS", None),
-            auth_app_options={"projectId": self.__env.str("PROJECT_ID")},
-            client_id=self.__env.str("CLIENT_ID"),
-            client_secret=self.__env.str("CLIENT_SECRET"),
-            certificate=self.__env.str("CERTIFICATE"),
-            sandbox=self.__env.bool("ENV"),
-            storage_credentials=self.__env.str("GOOGLE_APPLICATION_CREDENTIALS", None),
+            database_uri=self._env.str("DB_URI"),
+            service_name=self._env.str("SERVICE_NAME"),
+            credentials=self._env.str("GOOGLE_APPLICATION_CREDENTIALS", None),
+            auth_app_options={"projectId": self._env.str("PROJECT_ID")},
+            client_id=self._env.str("CLIENT_ID"),
+            client_secret=self._env.str("CLIENT_SECRET"),
+            certificate=self._env.str("CERTIFICATE"),
+            sandbox=self.is_local or self.is_staging,
+            storage_credentials=self._env.str("GOOGLE_APPLICATION_CREDENTIALS", None),
         )
 
     @property
     @lru_cache
     def adapters_config(self) -> AdaptersConfig:
         return AdaptersConfig(
-            pix_qrcode_bucket_name=self.__env.str("PIX_QRCODE_BUCKET_NAME"),
+            pix_qrcode_bucket_name=self._env.str("PIX_QRCODE_BUCKET_NAME"),
         )
 
 

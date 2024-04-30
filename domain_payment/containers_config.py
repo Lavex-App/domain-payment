@@ -78,7 +78,10 @@ class ProjectConfig(Config):
     @lru_cache
     def __pix_framework_config(self) -> PixFrameworkConfig:
         return PixFrameworkConfig(
-            certificate=self._env.str("CERTIFICATE"),
+            project_id=self._env.str("PROJECT_ID"),
+            service_tag=self._env.str("SERVICE_TAG"),
+            env=self._get_project_env,
+            credentials=self._env.str("GOOGLE_APPLICATION_CREDENTIALS", None),
             client_id=self._env.str("CLIENT_ID"),
             client_secret=self._env.str("CLIENT_SECRET"),
             sandbox=self.is_local or self.is_staging,

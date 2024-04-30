@@ -1,18 +1,18 @@
 steps:
   - id: "Set App Engine variables"
     name: "gcr.io/cloud-builders/gcloud"
-    secretEnv: ["DB_URI", "PIX_QRCODE_BUCKET_NAME", "CERTIFICATE", "CLIENT_ID", "CLIENT_SECRET", "PROJECT_ID"]
+    secretEnv: ["DB_URI", "PIX_QRCODE_BUCKET_NAME", "CLIENT_ID", "CLIENT_SECRET", "PROJECT_ID"]
     entrypoint: "bash"
     args:
       - -c
       - |
         echo $'\n  DB_URI: '$$DB_URI >> ./infra/app_engine/${_ENV}.yaml
         echo $'\n  PIX_QRCODE_BUCKET_NAME: '$$PIX_QRCODE_BUCKET_NAME >> ./infra/app_engine/${_ENV}.yaml
-        echo $'\n  CERTIFICATE: '$$CERTIFICATE >> ./infra/app_engine/${_ENV}.yaml
         echo $'\n  CLIENT_ID: '$$CLIENT_ID >> ./infra/app_engine/${_ENV}.yaml
         echo $'\n  CLIENT_SECRET: '$$CLIENT_SECRET >> ./infra/app_engine/${_ENV}.yaml
         echo $'\n  PROJECT_ID: '$$PROJECT_ID >> ./infra/app_engine/${_ENV}.yaml
         echo $'\n  SERVICE_NAME: ${_SERVICE_NAME}\n' >> ./infra/app_engine/${_ENV}.yaml
+        echo $'\n  SERVICE_TAG: ${_SERVICE_TAG}\n' >> ./infra/app_engine/${_ENV}.yaml
     timeout: "1600s"
 
   - id: "Move App Engine env"
@@ -39,8 +39,6 @@ availableSecrets:
       env: "DB_URI"
     - versionName: projects/$PROJECT_ID/secrets/${_ENV}_${_SERVICE_TAG}_PIX_QRCODE_BUCKET_NAME/versions/latest
       env: "PIX_QRCODE_BUCKET_NAME"
-    - versionName: projects/$PROJECT_ID/secrets/${_ENV}_${_SERVICE_TAG}_CERTIFICATE/versions/latest
-      env: "CERTIFICATE"
     - versionName: projects/$PROJECT_ID/secrets/${_ENV}_${_SERVICE_TAG}_CLIENT_ID/versions/latest
       env: "CLIENT_ID"
     - versionName: projects/$PROJECT_ID/secrets/${_ENV}_${_SERVICE_TAG}_CLIENT_SECRET/versions/latest

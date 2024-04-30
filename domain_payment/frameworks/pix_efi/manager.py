@@ -4,7 +4,8 @@ from typing import TypedDict
 
 import aiofiles
 from efipay import EfiPay
-from google.cloud import secretmanager
+from google.cloud import secretmanager_v1
+from google.oauth2 import service_account
 
 from domain_payment.adapters.interface_adapters.exceptions import PixQRCodeImageTemporarilyUnavailable
 from domain_payment.adapters.interface_adapters.interfaces import PixProvider
@@ -68,11 +69,12 @@ class SecretManager:
     async def retrieve_secret(self, secret_name: str) -> str:
         secret_id = f"{self.__env}_{self.__service_tag}_{secret_name}"
         secret_path = f"projects/{self.__project_id}/secrets/{secret_id}/versions/latest"
-        request = secretmanager.AccessSecretVersionRequest(name=secret_path)
+        request = secretmanager_v1.AccessSecretVersionRequest(name=secret_path)
         response = await self.__app.access_secret_version(request=request)
         return response.payload.data.decode("utf-8")
 
-    def __get_app(self) -> secretmanager.SecretManagerServiceAsyncClient:
+    def __get_app(self) -> secretmanager_v1.SecretManagerServiceAsyncClient:
         if self.__credentials:
-            return secretmanager.SecretManagerServiceAsyncClient(credentials=self.__credentials)
-        return secretmanager.SecretManagerServiceAsyncClient()
+            certificate = service_account.Credentials.from_service_account_file(self.__credentials)
+            return secretmanager_v1.SecretManagerServiceAsyncClient(credentials=certificate)
+        return secretmanager_v1.SecretManagerServiceAsyncClient()

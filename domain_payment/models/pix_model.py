@@ -32,5 +32,10 @@ class PixModel(BaseModel):
 
 
 class PixChargeModel(BaseModel):
+    pix_qrcode_image: bytes
+    pix_copy_paste: str
+
+
+class PixChargeResponseModel(BaseModel):
     pix_qrcode_path: str
     pix_copy_paste: str

@@ -1,13 +1,15 @@
 from abc import ABCMeta, abstractmethod
 
-from domain_payment.models import AccountModel, AuthenticatedUserModel, PixChargeModel, PixModel
+from domain_payment.models import AccountModel, AuthenticatedUserModel, PixChargeResponseModel, PixModel
 
 from .interfaces import Service
 
 
 class PaymentService(Service, metaclass=ABCMeta):
     @abstractmethod
-    async def generate_pix_qrcode(self, pix_model: PixModel, user_model: AuthenticatedUserModel) -> PixChargeModel: ...
+    async def generate_pix_qrcode(
+        self, pix_model: PixModel, user_model: AuthenticatedUserModel
+    ) -> PixChargeResponseModel: ...
 
 
 class AdminService(Service, metaclass=ABCMeta):

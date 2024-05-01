@@ -3,7 +3,7 @@ from typing import Any, NamedTuple
 
 
 class ImageUploadInput(NamedTuple):
-    path2image: str
+    image: bytes
     bucket_name: str
     image_name_on_bucket: str
 

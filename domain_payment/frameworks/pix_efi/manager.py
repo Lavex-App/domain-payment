@@ -1,15 +1,14 @@
 import base64
-from pathlib import Path
+from tempfile import NamedTemporaryFile
 from typing import TypedDict
 
-import aiofiles
 from efipay import EfiPay
 from google.cloud import secretmanager_v1
 from google.oauth2 import service_account
 
 from domain_payment.adapters.interface_adapters.exceptions import PixQRCodeImageTemporarilyUnavailable
 from domain_payment.adapters.interface_adapters.interfaces import PixProvider
-from domain_payment.models import AuthenticatedUserModel, PixChargeModel, PixModel
+from domain_payment.models import PixChargeModel, PixModel
 
 
 class GCPSecretConfig(TypedDict):
@@ -29,33 +28,30 @@ class PixManager(PixProvider):
     __app: EfiPay
 
     def __init__(self, config: PixFrameworkConfig) -> None:
-        self.__certificate_filename = "efi-certificate.pem"
+        self.__certificate_tmp_file = NamedTemporaryFile(mode="w", suffix=".pem")  # pylint: disable=R1732
         self.__config = config
 
     async def connect(self) -> None:
         await self.__create_certificate_file()
-        self.__app = EfiPay({**self.__config, "certificate": self.__certificate_filename})
+        self.__app = EfiPay({**self.__config, "certificate": self.__certificate_tmp_file.name})
 
-    def close(self) -> None: ...
+    def close(self) -> None:
+        self.__certificate_tmp_file.close()
 
-    async def create_charge(self, pix_model: PixModel, user_model: AuthenticatedUserModel) -> PixChargeModel:
+    async def create_charge(self, pix_model: PixModel) -> PixChargeModel:
         body = pix_model.model_dump()
         pix = self.__app.pix_create_immediate_charge(body=body)
         params = {"id": pix["loc"]["id"]}
         qrcode_response = self.__app.pix_generate_qrcode(params=params)
         if "imagemQrcode" in qrcode_response:
-            filename = f"{user_model.uid}.png"
-            async with aiofiles.open(filename, mode="wb") as fh:
-                await fh.write(base64.b64decode(qrcode_response["imagemQrcode"].replace("data:image/png;base64,", "")))
-            return PixChargeModel(pix_qrcode_path=filename, pix_copy_paste=qrcode_response["qrcode"])
+            image_bytes = base64.b64decode(qrcode_response["imagemQrcode"].replace("data:image/png;base64,", ""))
+            return PixChargeModel(pix_qrcode_image=image_bytes, pix_copy_paste=qrcode_response["qrcode"])
         raise PixQRCodeImageTemporarilyUnavailable()
 
     async def __create_certificate_file(self) -> None:
         secret_manager = SecretManager(self.__config)
         certificate = await secret_manager.retrieve_secret("CERTIFICATE")
-        if not Path(self.__certificate_filename).exists():
-            with open(self.__certificate_filename, mode="w", encoding="utf-8") as cert_file:
-                cert_file.write(certificate)
+        self.__certificate_tmp_file.write(certificate)
 
 
 class SecretManager:

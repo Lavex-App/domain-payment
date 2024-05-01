@@ -52,7 +52,12 @@ class PixManager(PixProvider):
     async def __create_certificate_file(self) -> None:
         secret_manager = SecretManager(self.__config)
         certificate = await secret_manager.retrieve_secret("CERTIFICATE")
-        certificate_tmp_file = NamedTemporaryFile(mode="w", suffix=".pem", delete=False, delete_on_close=False)
+        certificate_tmp_file = NamedTemporaryFile(  # pylint: disable=R1732
+            mode="w",
+            suffix=".pem",
+            delete=False,
+            delete_on_close=False,
+        )
         certificate_tmp_file.write(certificate)
         certificate_tmp_file.seek(0)
         self.__temporary_filename = certificate_tmp_file.name

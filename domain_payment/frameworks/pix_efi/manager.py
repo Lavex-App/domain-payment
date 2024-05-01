@@ -1,4 +1,5 @@
 import base64
+from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import TypedDict
 
@@ -26,17 +27,17 @@ class PixFrameworkConfig(GCPSecretConfig):
 
 class PixManager(PixProvider):
     __app: EfiPay
+    __temporary_filename: str
 
     def __init__(self, config: PixFrameworkConfig) -> None:
-        self.__certificate_tmp_file = NamedTemporaryFile(mode="w", suffix=".pem")  # pylint: disable=R1732
         self.__config = config
 
     async def connect(self) -> None:
         await self.__create_certificate_file()
-        self.__app = EfiPay({**self.__config, "certificate": self.__certificate_tmp_file.name})
+        self.__app = EfiPay({**self.__config, "certificate": self.__temporary_filename})
 
     def close(self) -> None:
-        self.__certificate_tmp_file.close()
+        Path(self.__temporary_filename).unlink()
 
     async def create_charge(self, pix_model: PixModel) -> PixChargeModel:
         body = pix_model.model_dump()
@@ -51,7 +52,15 @@ class PixManager(PixProvider):
     async def __create_certificate_file(self) -> None:
         secret_manager = SecretManager(self.__config)
         certificate = await secret_manager.retrieve_secret("CERTIFICATE")
-        self.__certificate_tmp_file.write(certificate)
+        certificate_tmp_file = NamedTemporaryFile(  # pylint: disable=R1732
+            mode="w",
+            suffix=".pem",
+            delete=False,
+            delete_on_close=False,
+        )
+        certificate_tmp_file.write(certificate)
+        certificate_tmp_file.seek(0)
+        self.__temporary_filename = certificate_tmp_file.name
 
 
 class SecretManager:

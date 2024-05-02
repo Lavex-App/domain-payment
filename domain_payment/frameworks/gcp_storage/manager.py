@@ -16,6 +16,7 @@ from domain_payment.adapters.interface_adapters.interfaces import (
 
 class GCPStorageFrameworkConfig(TypedDict):
     storage_credentials: str | None
+    service_account_email: str | None
 
 
 class GCPStorageManager(BucketProvider, BucketUploader):
@@ -23,6 +24,7 @@ class GCPStorageManager(BucketProvider, BucketUploader):
 
     def __init__(self, config: GCPStorageFrameworkConfig, session: Session) -> None:
         self.__credentials = config.get("storage_credentials")
+        self.__service_account_email = config.get("service_account_email")
         self.__session = session
 
     async def __aenter__(self) -> BucketUploader:
@@ -43,6 +45,7 @@ class GCPStorageManager(BucketProvider, BucketUploader):
             upload_metadata,
         ).get_signed_url(
             1800,
+            service_account_email=self.__service_account_email,
             session=self.__session,  # type: ignore
         )  # type: ignore
         return ImageUploadOutput(image_uri=signed_image_uri)

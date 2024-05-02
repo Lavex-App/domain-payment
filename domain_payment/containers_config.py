@@ -92,6 +92,7 @@ class ProjectConfig(Config):
     def __gcp_storage_framework_config(self) -> GCPStorageFrameworkConfig:
         return GCPStorageFrameworkConfig(
             storage_credentials=self._env.str("GOOGLE_APPLICATION_CREDENTIALS", None),
+            service_account_email=self._env.str("SERVICE_ACCOUNT_EMAIL"),
         )
 
 
